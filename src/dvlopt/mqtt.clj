@@ -292,9 +292,8 @@
 
 ;; TODO port
 
-(let [host    "localhost"
-      port    1883
-      scheme  :tcp]
+(let [host     "localhost"
+      port-tcp 1883]
 
   (def defaults
 
@@ -305,19 +304,26 @@
      ::interval.sec.keep-alive 60
      ::manual-acks?            false
      ::max-inflight            10
-     ::nodes                   [{::scheme scheme
+     ::nodes                   [{::scheme :tcp
                                  ::host   host
-                                 ::port   port}]
+                                 ::port   port-tcp}]
      ::payload                 (byte-array 0)
-     ::port                    {:tcp port
-                                :ssl 8883}
      ::qos                     0
      ::retained?               false
      ::scheme                  :tcp
      ::timeout.msec.close      30000
      ::timeout.sec.connect     30
      ::will.qos                0
-     ::will.retained?          true}))
+     ::will.retained?          true})
+
+
+  (def defaults-port
+
+    ""
+
+    {:ssl 8883
+     :tcp port-tcp}))
+
 
 
 
@@ -325,13 +331,40 @@
 ;;;;;;;;;; Misc
 
 
-(s/fdef uri
+(defmacro try-sync
+
+  ""
+
+  [& forms]
+
+  `(try
+     ~@forms
+     (catch Throwable e#
+       (exception e#))))
+
+
+
+
+(defmacro try-async
+
+  ""
+
+  [cb & forms]
+
+  `(try
+     ~@forms
+     (catch Throwable e#
+       (when-some [cb'# ~cb]
+         (cb'# (exception e#)
+               nil)))))
+
+(s/fdef node->uri
 
   :args (s/cat :node (s/nilable ::node))
   :ret  ::uri)
 
 
-(defn uri
+(defn node->uri
 
   ""
 
@@ -341,8 +374,8 @@
                              node
                              defaults)
         port    (or (::port node)
-                    (get-in defaults
-                            [::port scheme]))]
+                    (get defaults-port
+                         scheme))]
     (format (if port
               "%s://%s:%d"
               "%s://%s")

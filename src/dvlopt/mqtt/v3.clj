@@ -7,9 +7,6 @@
   (:require [clojure.spec.alpha                :as s]
             [dvlopt.mqtt                       :as mqtt]
             [dvlopt.mqtt.v3.interop            :as mqtt.v3.interop]
-            [dvlopt.mqtt.v3.interop.java       :as mqtt.v3.interop.java]
-            [dvlopt.mqtt.v3.interop.clj        :as mqtt.v3.interop.clj]
-            [dvlopt.mqtt.v3.interop.clj.tokens :as mqtt.v3.interop.clj.tokens]
             [dvlopt.mqtt.v3.stores             :as mqtt.v3.stores]
             [dvlopt.void                       :as void])
   (:import (java.util.concurrent ScheduledThreadPoolExecutor
@@ -44,34 +41,34 @@
            :ret  nil?))
 
 
-(s/def ::data.closed
+(s/def ::data.closing
 
-  ::mqtt.v3.interop.clj.tokens/disconnection)
+  ::mqtt.v3.interop/imqtt-token.disconnection)
 
 
 (s/def ::data.connection
 
-  ::mqtt.v3.interop.clj.tokens/connection)
+  ::mqtt.v3.interop/imqtt-token.connection)
 
 
 (s/def ::data.delivery
 
-  ::mqtt.v3.interop.clj.tokens/delivery)
+  ::mqtt.v3.interop/imqtt-token.delivery)
 
 
-(s/def ::data.published
+(s/def ::data.publication
 
-  ::mqtt.v3.interop.clj.tokens/publication)
-
-
-(s/def ::data.subscribed
-
-  ::mqtt.v3.interop.clj.tokens/subscription)
+  ::mqtt.v3.interop/imqtt-token.publication)
 
 
-(s/def ::data.unsubscribed
+(s/def ::data.subscription
 
-  ::mqtt.v3.interop.clj.tokens/unsubscription)
+  ::mqtt.v3.interop/imqtt-token.subscription)
+
+
+(s/def ::data.unsubscription
+
+  ::mqtt.v3.interop/imqtt-token.unsubscription)
 
 
 (s/def ::error.connection
@@ -92,7 +89,7 @@
 (s/def ::on-closed
 
   (s/fspec :args (s/or :success (s/cat :error nil?
-                                       :data  ::data.closed)
+                                       :data  ::data.closing)
                        :failure (s/cat :error ::mqtt/error
                                        :data  nil?))))
 
@@ -123,7 +120,7 @@
 (s/def ::on-published
 
   (s/fspec :args (s/or :success (s/cat :error nil?
-                                       :data  ::data.published)
+                                       :data  ::data.publication)
                        :failure (s/cat :error ::mqtt/error
                                        :data  nil?))
            :ret  nil?))
@@ -132,7 +129,7 @@
 (s/def ::on-subscribed
 
   (s/fspec :args (s/or :success (s/cat :error nil?
-                                       :data  ::data.subscribed)
+                                       :data  ::data.subscription)
                        :failure (s/cat :error ::mqtt/error
                                        :data  nil?))
            :ret  nil?))
@@ -141,7 +138,7 @@
 (s/def ::on-unsubscribed
 
   (s/fspec :args (s/or :success (s/cat :error nil?
-                                       :data  :data.unsubscribed)
+                                       :data  :data.unsubscription)
                        :failure (s/cat :error ::mqtt/error
                                        :data  nil?))))
 
@@ -180,7 +177,7 @@
 
      (let [map-exception (when on-connection
                            (fn map-exception [e]
-                             (assoc (mqtt.v3.interop.clj/exception e)
+                             (assoc (mqtt.v3.interop/exception->clj e)
                                     ::connect
                                     connect)))]
        (try
@@ -188,8 +185,8 @@
                    mco
                    nil
                    (some-> on-connection
-                           (mqtt.v3.interop.java/imqtt-action-listener map-exception
-                                                                       mqtt.v3.interop.clj.tokens/connection)))
+                           (mqtt.v3.interop/clj->imqtt-action-listener map-exception
+                                                                       mqtt.v3.interop/imqtt-token->clj--connection)))
          (catch Throwable e
            (void/call on-connection
                       (map-exception e)
@@ -271,7 +268,7 @@
                                             (mqtt.v3.stores/ram))
                                         (TimerPingSender.)
                                         stpe)
-         opts-connect (mqtt.v3.interop.java/mqtt-connect-options opts)
+         opts-connect (mqtt.v3.interop/clj->mqtt-connect-options opts)
          connect      (-fn-connect stpe
                                    client
                                    (::mqtt.v3.interop/MqttConnectOptions opts-connect)
@@ -286,14 +283,14 @@
                                                     manual-acks?)}
                              (select-keys opts-connect
                                           [::mqtt/clean-session?
-                                           ::mqtt/interval.sec.kee-alive
+                                           ::mqtt/interval.sec.keep-alive
                                            ::mqtt/max-inflight
                                            ::mqtt/timeout.sec.connect
                                            ::mqtt/uris
                                            ::mqtt/will.payload
                                            ::mqtt/will.qos
                                            ::mqtt/will.retained?])
-                             (let [result (mqtt.v3.interop.java/disconnected-buffer-options opts)]
+                             (let [result (mqtt.v3.interop/clj->disconnected-buffer-options opts)]
                                (.setBufferOpts client
                                                (::mqtt.v3.interop/DisconnectedBufferOptions result))
                                (select-keys result
@@ -307,7 +304,7 @@
                  on-message-delivered
                  on-message-unhandled)
          (.setCallback client
-                       (mqtt.v3.interop.java/mqtt-callback (when on-connection-lost
+                       (mqtt.v3.interop/clj->mqtt-callback (when on-connection-lost
                                                              (fn on-connection-lost' [e]
                                                                (on-connection-lost (assoc e
                                                                                           ::connect
@@ -332,24 +329,22 @@
 
   ""
 
-  (^IMqttAsyncClient
-
-   [client]
+  ([client]
 
    (close client
           nil))
 
 
-  (^IMqttAsyncClient
-
-   [^IMqttAsyncClient client opts]
+  ([^IMqttAsyncClient client opts]
    
    (let [on-closed  (::on-closed opts)
          close      (fn close [data]
                       (future
-                        (let [e (mqtt.v3.interop.clj/try-sync
+                        (let [e (try
                                   (.close client)
-                                  nil)]
+                                  nil
+                                  (catch Throwable e
+                                    (mqtt.v3.interop/exception->clj e)))]
                           (void/call on-closed
                                      e
                                      (when-not e
@@ -360,19 +355,22 @@
                                    e
                                    nil)
                         (close data)))]
-     (mqtt.v3.interop.clj/try-async
-       on-closed
+     (try
        (if (connected? client)
          (.disconnect client
                       (max 0
                            (void/obtain ::mqtt/timeout.msec.close
                                         opts
                                         mqtt/defaults))
-                      (mqtt.v3.interop.java/imqtt-action-listener on-closed'
-                                                                  mqtt.v3.interop.clj/exception
-                                                                  mqtt.v3.interop.clj.tokens/disconnection))
-         (close))))
-     nil))
+                      (mqtt.v3.interop/clj->imqtt-action-listener on-closed'
+                                                                  mqtt.v3.interop/exception->clj
+                                                                  mqtt.v3.interop/imqtt-token->clj--disconnection))
+         (close))
+       (catch Throwable e
+         (void/call on-closed
+                    (mqtt.v3.interop/exception->clj e)
+                    nil))))
+   nil))
 
 
 
@@ -458,8 +456,7 @@
   [^IMqttAsyncClient client topic opts]
 
   (let [on-published (::on-published opts)]
-    (mqtt.v3.interop.clj/try-async
-      on-published
+    (try
       (.publish client
                 topic
                 (void/obtain ::mqtt/payload
@@ -473,8 +470,12 @@
                              mqtt/defaults)
                 nil
                 (some-> on-published
-                        (mqtt.v3.interop.java/imqtt-action-listener mqtt.v3.interop.clj/exception
-                                                                    mqtt.v3.interop.clj.tokens/publication)))))
+                        (mqtt.v3.interop/clj->imqtt-action-listener mqtt.v3.interop/exception->clj
+                                                                    mqtt.v3.interop/imqtt-token->clj--publication)))
+      (catch Throwable e
+        (void/call on-published
+                   (mqtt.v3.interop/exception->clj e)
+                   nil))))
   client)
 
 
@@ -526,7 +527,7 @@
   (into-array IMqttMessageListener
               (map (fn map-handlers [[topic opts]]
                      (if-let [handler (::on-message opts)]
-                       (mqtt.v3.interop.java/imqtt-message-listener handler)
+                       (mqtt.v3.interop/clj->imqtt-message-listener handler)
                        (throw (IllegalArgumentException. (format "Subscription handler missing for topic '%s'."
                                                                  topic)))))
                    subscriptions)))
@@ -535,8 +536,6 @@
 
 
 (s/fdef subscribe
-
-  ;; TODO spec subscriptions and handlers
 
   :args (s/cat :client        ::client
                :subscriptions ::subscriptions
@@ -563,16 +562,19 @@
 
    (when-let [subscriptions' (seq subscriptions)]
      (let [on-subscribed (::on-subscribed opts)]
-       (mqtt.v3.interop.clj/try-async
-         on-subscribed
+       (try
          (.subscribe client
                      (-subs-topics subscriptions')
                      (-subs-qoses subscriptions')
                      nil
                      (some-> on-subscribed
-                             (mqtt.v3.interop.java/imqtt-action-listener mqtt.v3.interop.clj/exception
-                                                                         mqtt.v3.interop.clj.tokens/subscription))
-                     (-subs-handlers subscriptions')))))
+                             (mqtt.v3.interop/clj->imqtt-action-listener mqtt.v3.interop/exception->clj
+                                                                         mqtt.v3.interop/imqtt-token->clj--subscription))
+                     (-subs-handlers subscriptions'))
+         (catch Throwable e
+           (void/call on-subscribed
+                      (mqtt.v3.interop/exception->clj e)
+                      nil)))))
    client))
 
 
@@ -604,14 +606,17 @@
    [^IMqttAsyncClient client topics opts]
 
    (let [on-unsubscribed (::on-unsubscribed opts)]
-     (mqtt.v3.interop.clj/try-async
-       on-unsubscribed
+     (try
        (.unsubscribe client
-                     (mqtt.v3.interop.java/string-array topics)
+                     (mqtt.v3.interop/string-array topics)
                      nil
                      (some-> on-unsubscribed
-                             (mqtt.v3.interop.java/imqtt-action-listener mqtt.v3.interop.clj/exception
-                                                                         mqtt.v3.interop.clj.tokens/unsubscription)))))
+                             (mqtt.v3.interop/clj->imqtt-action-listener mqtt.v3.interop/exception->clj
+                                                                         mqtt.v3.interop/imqtt-token->clj--unsubscription)))
+       (catch Throwable e
+         (void/call on-unsubscribed
+                    (mqtt.v3.interop/exception->clj e)
+                    nil))))
    client))
 
 
@@ -677,8 +682,8 @@
   [^MqttAsyncClient client index]
 
   (try
-    (mqtt.v3.interop.clj/mqtt-message (.getBufferedMessage client
-                                                           index))
+    (mqtt.v3.interop/mqtt-message->clj (.getBufferedMessage client
+                                                            index))
     (catch IndexOutOfBoundsException _
       nil)))
 

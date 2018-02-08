@@ -6,9 +6,9 @@
 
   (:require [clojure.spec.alpha     :as s]
             [clojure.spec.gen.alpha :as gen]
-            [dvlopt.mqtt            :as mqtt]
-            [dvlopt.mqtt.v3.interop :as mqtt.v3.interop])
-  (:import (org.eclipse.paho.client.mqttv3.persist MemoryPersistence
+            [dvlopt.mqtt            :as mqtt])
+  (:import org.eclipse.paho.client.mqttv3.MqttClientPersistence
+           (org.eclipse.paho.client.mqttv3.persist MemoryPersistence
                                                    MqttDefaultFilePersistence)))
 
 
@@ -19,7 +19,12 @@
 
 (s/def ::store
 
-  ::mqtt.v3.interop/MqttClientPersistence)
+  (s/with-gen #(instance? MqttClientPersistence
+                            %)
+                (fn gen []
+                  (gen/fmap (fn store [_]
+                              (MemoryPersistence.))
+                            (s/gen nil?)))))
 
 
 (s/def ::size
