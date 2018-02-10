@@ -249,7 +249,7 @@
 
 (defn open
 
-  "Opens a connection.
+  "Builds a client and opens a connection.
   
    Returns a map containing the ::client as well as values for options that have default values."
 
@@ -333,7 +333,7 @@
 
 (defn close
 
-  "Closes a connection and releases all associated resources."
+  "Closes a client and releases all associated resources."
 
   ([client]
 

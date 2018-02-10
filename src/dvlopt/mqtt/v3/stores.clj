@@ -51,7 +51,7 @@
 
 (def defaults
 
-  ""
+  "Defaults values for specified keywords related to stores."
 
   {::size       5000
    ::persisted? false
