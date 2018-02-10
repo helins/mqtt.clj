@@ -1,6 +1,9 @@
 (ns dvlopt.mqtt
 
-  ""
+  "Specs and defaults values related to MQTT, as well as functions which should not be
+   specific to a given MQTT version.
+
+   All functions are specified using clojure.spec."
 
   {:author "Adam Helinski"}
   
@@ -290,14 +293,13 @@
 
 ;;;;;;;;;; API - Defaults
 
-;; TODO port
 
 (let [host     "localhost"
       port-tcp 1883]
 
   (def defaults
 
-    ""
+    "Main default values refering to named keywords specified by clojure.spec."
 
     {::clean-session?          true
      ::host                    host
@@ -319,7 +321,7 @@
 
   (def defaults-port
 
-    ""
+    "Default values for ::port depending on ::scheme."
 
     {:ssl 8883
      :tcp port-tcp}))
@@ -331,33 +333,6 @@
 ;;;;;;;;;; Misc
 
 
-(defmacro try-sync
-
-  ""
-
-  [& forms]
-
-  `(try
-     ~@forms
-     (catch Throwable e#
-       (exception e#))))
-
-
-
-
-(defmacro try-async
-
-  ""
-
-  [cb & forms]
-
-  `(try
-     ~@forms
-     (catch Throwable e#
-       (when-some [cb'# ~cb]
-         (cb'# (exception e#)
-               nil)))))
-
 (s/fdef node->uri
 
   :args (s/cat :node (s/nilable ::node))
@@ -366,7 +341,7 @@
 
 (defn node->uri
 
-  ""
+  "Maps a ::node to a ::uri."
 
   [node]
 

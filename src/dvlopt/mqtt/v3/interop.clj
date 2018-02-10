@@ -1,6 +1,11 @@
 (ns dvlopt.mqtt.v3.interop
 
-  ""
+  "Conversion between java classes and clojure data structures.
+  
+   Functions do not have docstrings as they are very predictable and almost all of them
+   are specified using clojure.spec.
+
+   The user should not have to use this namespace."
 
   {:author "Adam Helinski"}
 
@@ -149,7 +154,7 @@
 
 (defn string-array
 
-  ""
+  "Maps a sequence of strings to an array ot strings."
 
   ^"[Ljava.lang.String;"
 
@@ -174,11 +179,9 @@
 
 (defprotocol MqttError
 
-  ""
-
   (exception->clj [e]
 
-    ""))
+    "Maps a java exception into a map containing information about the error."))
 
 
 
@@ -215,8 +218,6 @@
 
 (defn imqtt-token--topic
 
-  ""
-
   [^IMqttToken token]
 
   (first (.getTopics token)))
@@ -231,8 +232,6 @@
 
 
 (defn imqtt-token--uri
-
-  ""
 
   [^IMqttToken token]
 
@@ -251,8 +250,6 @@
 
 (defn imqtt-token->clj--connection
 
-  ""
-
   [^IMqttToken token]
 
   {::mqtt/uri            (imqtt-token--uri token)
@@ -268,8 +265,6 @@
 
 
 (defn imqtt-token->clj--delivery
-
-  ""
 
   [^IMqttToken token]
 
@@ -287,8 +282,6 @@
 
 (defn imqtt-token->clj--disconnection
 
-  ""
-
   [^IMqttToken token]
 
   {::mqtt/uri (imqtt-token--uri token)})
@@ -303,8 +296,6 @@
 
 
 (defn imqtt-token->clj--publication
-
-  ""
 
   [^IMqttToken token]
 
@@ -321,8 +312,6 @@
 
 
 (defn imqtt-token->clj--subscription
-
-  ""
 
   [^IMqttToken token]
 
@@ -347,8 +336,6 @@
 
 (defn imqtt-token->clj--unsubscription
 
-  ""
-
   [^IMqttToken token]
 
   {::mqtt/message-id (.getMessageId token)
@@ -364,8 +351,6 @@
 
 
 (defn mqtt-exception--reason-code->clj
-
-  ""
 
   [code]
 
@@ -410,8 +395,6 @@
 
 (defn mqtt-persistence-exception--reason-code->clj
 
-  ""
-
   [code]
 
   (if (identical? code
@@ -429,8 +412,6 @@
 
 
 (defn mqtt-message->clj
-
-  ""
 
   [^MqttMessage m]
 
@@ -458,8 +439,6 @@
 
 
 (defn clj->disconnected-buffer-options
-
-  ""
 
   (^DisconnectedBufferOptions
 
@@ -522,8 +501,6 @@
 
 (defn clj->imqtt-action-listener
 
-  ""
-
   ;; TODO spec ?
 
   ^IMqttActionListener
@@ -555,8 +532,6 @@
 
 (defn clj->imqtt-message-listener
 
-  ""
-
   ^IMqttMessageListener
 
   [callback]
@@ -585,8 +560,6 @@
 
 
 (defn clj->mqtt-callback
-
-  ""
 
   ^MqttCallback
 
@@ -643,8 +616,6 @@
 
 
 (defn clj->mqtt-connect-options
-
-  ""
 
   (^MqttConnectOptions
 

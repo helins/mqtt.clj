@@ -1,6 +1,9 @@
 (ns dvlopt.mqtt.v3
 
-  ""
+  "Functions for opening and handling a connection using the MQTT 3.x protocol.
+   All functions are specified using clojure.spec.
+  
+   Specs related to options and callbacks."
 
   {:author "Adam Helinski"}
 
@@ -167,7 +170,8 @@
 
 (defn- -fn-connect
 
-  ""
+  "Makes a function for connecting/reconnecting a client either right away or after a delay
+   given in milliseconds."
 
   [^ScheduledThreadPoolExecutor stpe ^IMqttAsyncClient client mco on-connection]
 
@@ -245,7 +249,9 @@
 
 (defn open
 
-  ""
+  "Opens a connection.
+  
+   Returns a map containing the ::client as well as values for options that have default values."
 
   (^IMqttAsyncClient
 
@@ -327,7 +333,7 @@
 
 (defn close
 
-  ""
+  "Closes a connection and releases all associated resources."
 
   ([client]
 
@@ -386,7 +392,7 @@
 
 (defn connected?
 
-  ""
+  "Is the given client currently connected ?"
 
   [^IMqttAsyncClient client]
 
@@ -403,7 +409,7 @@
 
 (defn current-uri
 
-  ""
+  "To which uri is the given client currently connected ?"
 
   [^MqttAsyncClient client]
 
@@ -423,7 +429,7 @@
 
 (defn client-id
 
-  ""
+  "What is the client-id of the given client ?"
 
   [^IMqttAsyncClient client]
 
@@ -449,7 +455,7 @@
 
 (defn publish
 
-  ""
+  "Publishes to a topic."
 
   ^IMqttAsyncClient
 
@@ -486,7 +492,7 @@
 
 (defn- -subs-topics
 
-  ""
+  "Maps ::subscriptions to an array of topics."
 
   ^"[Ljava.lang.String;"
 
@@ -501,7 +507,7 @@
 
 (defn- -subs-qoses
 
-  ""
+  "Maps ::subscriptions to an array of qoses."
 
   ^ints
 
@@ -518,7 +524,7 @@
 
 (defn- -subs-handlers
 
-  ""
+  "Maps ::subscriptions to an array of message handlers."
 
   ^"[Lorg.eclipse.paho.client.mqttv3.IMqttMessageListener;"
 
@@ -545,7 +551,7 @@
 
 (defn subscribe
 
-  ""
+  "Subscribes the given client to topics."
 
   (^IMqttAsyncClient
 
@@ -590,7 +596,7 @@
 
 (defn unsubscribe
 
-  ""
+  "Unsubscribes the given client from topics."
 
   (^IMqttAsyncClient
 
@@ -632,9 +638,10 @@
 
 (defn ack
 
-  ""
-
-  ;; TODO throws MqttException ?
+  "Manually acknowledges a received message.
+  
+   Should not be used unless the client has been connected with the ::dvlopt.mqtt/manual-acks? option
+   set to true."
 
   [^IMqttAsyncClient client message]
 
@@ -659,7 +666,7 @@
 
 (defn buffer-count
 
-  ""
+  "Counts how many messages are currently buffered for reliability."
 
   [^MqttAsyncClient client]
 
@@ -677,7 +684,7 @@
 
 (defn buffer-get
 
-  ""
+  "Gets a buffered message."
 
   [^MqttAsyncClient client index]
 

@@ -1,6 +1,6 @@
 (ns dvlopt.mqtt.v3.stores
 
-  ""
+  "Stores buffer qos 1 and 2 messages for reliability."
 
   {:author "Adam Helinski"}
 
@@ -73,7 +73,9 @@
 
   ;; TODO Drops qos 0 messages across restarts
 
-  ""
+  "Persists messages to flat files in the given directory (current directory by default).
+  
+   a sub-directory is created for each client-id and connection uri."
 
   ^MqttDefaultFilePersistence
 
@@ -97,7 +99,7 @@
 
 (defn ram
 
-  ""
+  "Holds messages in ram, hence will not survive restarts."
 
   ^MemoryPersistence
 

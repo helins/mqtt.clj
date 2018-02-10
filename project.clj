@@ -1,5 +1,5 @@
 (defproject dvlopt/mqtt
-            "0.0.0-alpha0"
+            "0.0.0"
 
   :description  "Async MQTT 3.x client"
   :url          "https://github.com/dvlopt/qoqos"
