@@ -8,7 +8,8 @@
   :dependencies [[dvlopt/void                                     "0.0.0"]
                  [dvlopt/ex                                       "1.0.0"]
                  [org.eclipse.paho/org.eclipse.paho.client.mqttv3 "1.2.0"]]
-  :profiles     {:dev {:source-paths ["dev"]
+  :profiles     {:dev {:source-paths ["dev"
+                                      "examples"]
                        :main         user
                        :dependencies [[criterium              "0.4.4"]
                                       [org.clojure/clojure    "1.9.0"]

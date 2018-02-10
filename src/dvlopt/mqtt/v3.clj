@@ -311,8 +311,8 @@
                  on-message-unhandled)
          (.setCallback client
                        (mqtt.v3.interop/clj->mqtt-callback (when on-connection-lost
-                                                             (fn on-connection-lost' [e]
-                                                               (on-connection-lost (assoc e
+                                                             (fn on-connection-lost' [error]
+                                                               (on-connection-lost (assoc error
                                                                                           ::connect
                                                                                           connect))))
                                                            on-message-delivered
