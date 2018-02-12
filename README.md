@@ -8,7 +8,10 @@ values and options. Those keywords are specified using clojure.spec.
 
 ## Usage
 
-Ideally, refer to the longer provided example.
+Read the [API](https://dvlopt.github.io/doc/dvlopt/mqtt/).
+
+Read the [longer
+example](https://github.com/dvlopt/mqtt/blob/master/examples/dvlopt/mqtt/examples/v3/basic.clj).
 
 In short :
 
@@ -21,10 +24,9 @@ In short :
 ;; We will connect to the public MQTT server provided by mosquitto.org
 
 (def opts
-
-  {::mqtt/nodes [{::mqtt/scheme :tcp
-                  ::mqtt/host   "test.mosquitto.org"
-                  ::mqtt/port   1883}]})
+     {::mqtt/nodes [{::mqtt/scheme :tcp
+                     ::mqtt/host   "test.mosquitto.org"
+                     ::mqtt/port   1883}]})
 
 
 ;; Now we build our client.
@@ -33,13 +35,20 @@ In short :
      (::mqtt.v3/client (mqtt.v3/open opts)))
 
 
+;; The callback for the messages we receive from our example topic.
+
+(defn on-message
+
+  [message]
+
+  (println "Received :" (String. ^bytes (::mqtt/payload message))))
+
+
 ;; We subscribe to our example topic.
 
 (mqtt.v3/subscribe client
                    {"dvlopt/example/v3" {::mqtt/qos           1
-                                         ::mqtt.v3/on-message (fn [message]
-                                                                (println "Received :"
-                                                                         (String. ^bytes (::mqtt/payload message))))}})
+                                         ::mqtt.v3/on-message on-message}})
 
 
 ;; And now we publish to this topic.
