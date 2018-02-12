@@ -1,5 +1,8 @@
 # dvlopt.mqtt
 
+[![Clojars
+Project](https://img.shields.io/clojars/v/dvlopt/mqtt.svg)](https://clojars.org/dvlopt/mqtt)
+
 This library is built updon the [Paho MQTT
 Java](https://github.com/eclipse/paho.mqtt.java) client.
 
