@@ -11,7 +11,7 @@ values and options. Those keywords are specified using clojure.spec.
 
 ## Usage
 
-Read the [API](https://dvlopt.github.io/doc/dvlopt/mqtt/).
+Read the [API](https://dvlopt.github.io/doc/clojure/dvlopt/mqtt/index.html).
 
 Read the [longer
 example](https://github.com/dvlopt/mqtt/blob/master/examples/dvlopt/mqtt/examples/v3/basic.clj).
