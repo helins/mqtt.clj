@@ -77,14 +77,16 @@
   
    a sub-directory is created for each client-id and connection uri."
 
-  ^MqttDefaultFilePersistence
-
-  ([]
+  (^MqttDefaultFilePersistence
+   
+   []
 
    (flat-files (System/getProperty "user.dir")))
 
 
-  ([path]
+  (^MqttDefaultFilePersistence
+
+   [path]
 
    (MqttDefaultFilePersistence. path)))
 
