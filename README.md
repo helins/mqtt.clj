@@ -3,6 +3,8 @@
 [![Clojars
 Project](https://img.shields.io/clojars/v/dvlopt/mqtt.svg)](https://clojars.org/dvlopt/mqtt)
 
+**ARCHIVED IN FAVOR OF [machine_head](https://github.com/clojurewerkz/machine_head)**
+
 This library is built updon the [Paho MQTT
 Java](https://github.com/eclipse/paho.mqtt.java) client.
 
